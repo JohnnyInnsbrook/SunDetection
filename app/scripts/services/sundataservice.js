@@ -7,10 +7,10 @@
  * # sunDataService
  * Factory in the isTheSunOutApp.
  */
-angular.module('isTheSunOutApp')
-  .factory('sunDataService', function ($http, $q) {    
-   var service  = this;
-   this.sunData = 'test';
+angular.module('isTheSunOutApp',['ngCookies'])
+  .factory('sunDataService', function ($http, $q, $cookieStore, $cookies) {    
+  
+
       //utility function
     var findAndReturnFirstElementMatchValue = function(node, value){
       var matchNodes = node.getElementsByTagName(value);
@@ -62,22 +62,37 @@ angular.module('isTheSunOutApp')
         var currentTime = new Date().getTime();
         var sunriseTime = convertStringToDate(findAndReturnFirstElementMatchValue(xmlDoc, 'sunrise'));
         var sunsetTime = convertStringToDate(findAndReturnFirstElementMatchValue(xmlDoc, 'sunset'));
-        service.sunData = {
+        var sunData =  {
           sunriseTime: sunriseTime,
           sunsetTime: sunsetTime,
           sunOut: (currentTime > sunriseTime.getTime()) && (currentTime < sunsetTime.getTime())
         }; 
-        deferred.resolve(service.sunData);
+        $cookieStore.put('sunData',sunData);
+        deferred.resolve(sunData);
       }).error(function(){
         deferred.reject('unable to get DayLightData');
       });
     
     };
 
+    var dateHasBeenChecked = function(date, previousDate){
+        console.log(date.getDate() + ' : ' + previousDate.getDate() + ' ' + date.getDate() === previousDate.getDate());
+        console.log(date.getMonth() + ' : ' + previousDate.getMonth() + '');
+        return previousDate && (date.getDate() === previousDate.getDate() && date.getMonth() === previousDate.getMonth()); 
+    };
+
     // Public API here
     return {
       getSunData: function (userCoordinates, date) {
         var deferred = $q.defer();
+        var cookieSunData = $cookieStore.get('sunData');
+        if(cookieSunData && dateHasBeenChecked(date, new Date($cookies.previousDate))){
+          deferred.resolve(cookieSunData);
+          return deferred.promise;
+        }
+        console.log($cookies);
+        $cookies.previousDate = date;
+        console.log($cookies);
         getDaylightData(generateBaseSunsetServiceURL, userCoordinates, date, deferred);
         return deferred.promise;
       }
