@@ -20,12 +20,14 @@
     <![endif]-->
 
     <!-- Add your site or application content here -->
-    <div class="container" ng-controller="SunController as sunControl">
+    <div class="container" ng-controller="SundatacontrollerCtrl as sunControl">
       <h1>Is the sun out? </h1>
-      <h1>{{sunControl.sunOut}}</h1>
+      <h1>{{sunControl.sunData.sunOut}}</h1>
 
-      <h2>Sunrise: {{sunControl.sunriseTime | date:'hh:mm:ss a'}}</h2>
-      <h2>Sunset: {{sunControl.sunsetTime  | date:'hh:mm:ss a'}}</h2>
+      <h2>Sunrise: {{sunControl.sunData.sunriseTime | date:'hh:mm:ss a'}}</h2>
+      <h2>Sunset: {{sunControl.sunData.sunsetTime  | date:'hh:mm:ss a'}}</h2>
+
+      <h3>Current Location latitude {{sunControl.userCoordinates.latitude}} longitude {{sunControl.userCoordinates.longitude}} :</h3>
     </div>
 
 
@@ -45,6 +47,9 @@
 
         <!-- build:js({.tmp,app}) scripts/scripts.js -->
         <script src="scripts/app.js"></script>
+        <script src="scripts/services/sundataservice.js"></script>
+        <script src="scripts/controllers/sundatacontroller.js"></script>
+        <script src="scripts/services/locationservice.js"></script>
         <!-- endbuild -->
 </body>
 </html>
