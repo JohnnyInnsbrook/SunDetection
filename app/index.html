@@ -22,10 +22,14 @@
     <!-- Add your site or application content here -->
     <div class="container" ng-controller="SundatacontrollerCtrl as sunControl">
       <h1>Is the sun out? </h1>
-      <h1>{{sunControl.sunData.sunOut}}</h1>
+      <h1>{{sunControl.sunData | sunOutFilter}}</h1>
 
-      <h2>Sunrise: {{sunControl.sunData.sunriseTime | date:'hh:mm:ss a'}}</h2>
-      <h2>Sunset: {{sunControl.sunData.sunsetTime  | date:'hh:mm:ss a'}}</h2>
+
+      <h2>Time until the sun goes down: {{sunControl.countDownData.countDown}}</h2>  
+
+      <h2>Sunrise: {{sunControl.sunData.sunTimes[0].sunriseTime | date:'hh:mm:ss a'}}</h2>
+      <h2>Sunset: {{sunControl.sunData.sunTimes[0].sunsetTime  | date:'hh:mm:ss a'}}</h2>
+      <h2>Time Until {{sunControl.sunData | sunCountdownFilter}}</h2>
 
       <h3>Current Location latitude {{sunControl.userCoordinates.latitude}} longitude {{sunControl.userCoordinates.longitude}} :</h3>
     </div>
@@ -53,6 +57,8 @@
         <script src="scripts/services/sundataservice.js"></script>
         <script src="scripts/controllers/sundatacontroller.js"></script>
         <script src="scripts/services/locationservice.js"></script>
+        <script src="scripts/filters/suncountdownfilter.js"></script>
+        <script src="scripts/filters/sunoutfilter.js"></script>
         <!-- endbuild -->
 </body>
 </html>

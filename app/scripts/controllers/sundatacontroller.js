@@ -11,10 +11,13 @@ angular.module('isTheSunOutApp')
   .controller('SundatacontrollerCtrl', function (locationService, sunDataService) {
     	var controller = this;
 
-		var getSunData = function(){
-			sunDataService.getSunData(controller.userCoordinates, new Date()).then(
+    	
+		var getSunData = function(currentTime){
+			sunDataService.getSunData(controller.userCoordinates, currentTime).then(
 				function(value){
+					value.currentTime = currentTime;
 					controller.sunData = value;
+
 				},
 				function(value){
 					controller.sunData = {};
@@ -22,16 +25,35 @@ angular.module('isTheSunOutApp')
 				});
 		};
 
+	
+
+		var timerHandler = function(){
+			var currentTime = new Date();
+    		getSunData(currentTime);
+    		
+		};
+    
+		var kickoffTimer = function (){
+			window.setInterval(function(){
+			timerHandler();
+   			},1000);	
+		};
+
 		locationService.getUserCoordinates().then(
 			function(value){
 				controller.userCoordinates = value;
-				getSunData();
+				timerHandler();
+				kickoffTimer();
+
 			},
 			function(value){
 				controller.userCoordinates = {};
 				console.log(value);
 			}
 		);
+
+		
+		
 
 		
   });

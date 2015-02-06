@@ -53,22 +53,30 @@ angular.module('isTheSunOutApp',['ngCookies'])
 
 
     // service call
-    var getDaylightData = function(urlGenerator, userCoordinates, date, deferred){
+    var getDaylightData = function(urlGenerator, userCoordinates, date, deferred, numberOfDaysToRetrieve, sunData){
      
      var timeZoneOffset = (new Date().getTimezoneOffset() / 60) *  -1;
       $http.get(urlGenerator(userCoordinates, date, timeZoneOffset, isDst())).success(function(data){
         var parser=new DOMParser();
         var xmlDoc=parser.parseFromString(data,'text/xml');
-        var currentTime = new Date().getTime();
         var sunriseTime = convertStringToDate(findAndReturnFirstElementMatchValue(xmlDoc, 'sunrise'));
         var sunsetTime = convertStringToDate(findAndReturnFirstElementMatchValue(xmlDoc, 'sunset'));
-        var sunData =  {
-          sunriseTime: sunriseTime,
-          sunsetTime: sunsetTime,
-          sunOut: (currentTime > sunriseTime.getTime()) && (currentTime < sunsetTime.getTime())
-        }; 
-        $cookieStore.put('sunData',sunData);
-        deferred.resolve(sunData);
+        if(!sunData){
+         sunData = {sunTimes:[]}; 
+        }
+        sunData.sunTimes.push({sunriseTime:sunriseTime, sunsetTime:sunsetTime});
+        numberOfDaysToRetrieve --;
+
+        if(numberOfDaysToRetrieve === 0){
+            deferred.resolve(sunData);
+            $cookieStore.put('sunData',sunData);
+        }
+        else{
+          date.setDate(date.getDate()+1);
+          getDaylightData(urlGenerator, userCoordinates, date , deferred, numberOfDaysToRetrieve,sunData);
+        }
+        
+       
       }).error(function(){
         deferred.reject('unable to get DayLightData');
       });
@@ -76,8 +84,6 @@ angular.module('isTheSunOutApp',['ngCookies'])
     };
 
     var dateHasBeenChecked = function(date, previousDate){
-        console.log(date.getDate() + ' : ' + previousDate.getDate() + ' ' + date.getDate() === previousDate.getDate());
-        console.log(date.getMonth() + ' : ' + previousDate.getMonth() + '');
         return previousDate && (date.getDate() === previousDate.getDate() && date.getMonth() === previousDate.getMonth()); 
     };
 
@@ -90,10 +96,9 @@ angular.module('isTheSunOutApp',['ngCookies'])
           deferred.resolve(cookieSunData);
           return deferred.promise;
         }
-        console.log($cookies);
         $cookies.previousDate = date;
-        console.log($cookies);
-        getDaylightData(generateBaseSunsetServiceURL, userCoordinates, date, deferred);
+        getDaylightData(generateBaseSunsetServiceURL, userCoordinates, date, deferred, 2);
+
         return deferred.promise;
       }
     };
